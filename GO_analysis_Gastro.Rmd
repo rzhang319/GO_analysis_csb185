@@ -1,0 +1,87 @@
+---
+title: "GO_analysis_Gastro"
+output: html_document
+date: '2022-03-01'
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(data.table)
+```
+
+## Gastrointestinal
+
+# Famotidine_DB00927
+Read in PathFX result file.
+
+```{r}
+DB00927 <- read.csv("/Users/rachelzhang/Downloads/Famotidine_DB00927.csv")
+DB00927 <- as.data.frame(DB00927) %>% column_to_rownames("X")
+colnames(DB00927)
+DB00927
+```
+
+Filter for phenotypes involving keyword "breast".
+
+```{r}
+DB00927_assocBreastCancer <- DB00927[grep('[bB]reast', DB00927$phenotype), ]
+DB00927_assocBreastCancer
+```
+Extract genes associated with those phenotypes.
+
+```{r}
+DB00927_assocBreastCancer_geneID <- as.data.frame(DB00927_assocBreastCancer$genes)
+DB00927_assocBreastCancer_geneID <- c("NPS", "PTH")
+```
+
+Converting gene names to Entrez ID.
+
+```{r}
+hs <- org.Hs.eg.db
+my.symbols <- DB00927_assocBreastCancer_geneID
+geneLst <- select(hs, 
+                  keys = my.symbols,
+                  columns = c("ENTREZID", "SYMBOL"),
+                  keytype = "SYMBOL")
+geneLst <- geneLst$ENTREZID
+geneLst
+```
+
+GO over-representation analysis using package clusterProfiler.
+
+```{r}
+go <- enrichGO(geneLst, OrgDb = "org.Hs.eg.db", keyType = "ENTREZID", ont = "ALL", readable = TRUE)
+```
+
+View GO result.
+
+```{r}
+head(go, 25) %>% dplyr::select(ID, Description, pvalue, p.adjust) %>% DT::datatable(elementId = "goEle")
+```
+Export GO result.
+
+```{r}
+DB00927_assocBreastCancer_GO <- as.data.frame(go@result)
+DB00927_assocBreastCancer_GO
+
+write.csv(DB00927_assocBreastCancer_GO, "DB00927_GO.csv")
+```
+
+```{r}
+DB00927_GO <- read.csv("/Users/rachelzhang/Desktop/csb185/DB00927_GO.csv")
+DB00927_graph <- DB00927_GO[grep('BP', DB00927_GO$ONTOLOGY), ]
+DB00927_graph
+```
+```{r}
+DB00927_chart <- data.frame(DB00927_graph$Description, DB00927_graph$pvalue)
+y_axis <- DB00927_graph$Description
+x_axis <- DB00927_graph$pvalue
+graph_00927 <- ggplot(data = DB00927_chart, mapping = aes(x = x_axis, y = y_axis))  + geom_bar(stat = "identity") 
+graph_00927
+```
+

@@ -1,0 +1,194 @@
+---
+title: "GO_analysis_Resp"
+output: html_document
+date: '2022-03-01'
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(data.table)
+```
+
+## Respiratory
+
+#Albuterol_DB01001
+Read in PathFX result file.
+
+```{r}
+DB01001 <- read.csv("/Users/rachelzhang/Downloads/Albuterol_DB01001.csv")
+DB01001 <- as.data.frame(DB01001) %>% column_to_rownames("X")
+colnames(DB01001)
+DB01001
+```
+
+Filter for phenotypes involving keyword "breast".
+
+```{r}
+DB01001_assocBreastCancer <- DB01001[grep('[bB]reast', DB01001$phenotype), ]
+DB01001_assocBreastCancer
+```
+Extract genes associated with those phenotypes.
+
+```{r}
+DB01001_assocBreastCancer_geneID <- as.data.frame(DB01001_assocBreastCancer$genes)
+DB01001_assocBreastCancer_geneID <- c("ADM", "ADORA2B", "AGFG1", "AP2A1", "APOB", "BIN1", "CALCR", "CD4", "CGA", "CRH", "CTTN", "CYP3A4", "DAB2", "EGF", "EGFR", "FNBP1L", "GHRH", "GNAS", "GRB2", "HGS", "HIP1", "IGF2R", "LHB", "LHCGR", "PTH", "PTH1R", "PTHLH", "REPS1", "REPS2", "SH3GL2", "SH3KBP1", "SNX9", "SYNJ2", "TFRC", "TRIP10", "VIP", "WASL", "WNT5A", "NPS", "AVP", "AP2S1" )
+```
+
+Converting gene names to Entrez ID.
+
+```{r}
+hs <- org.Hs.eg.db
+my.symbols <- DB01001_assocBreastCancer_geneID
+geneLst <- select(hs, 
+                  keys = my.symbols,
+                  columns = c("ENTREZID", "SYMBOL"),
+                  keytype = "SYMBOL")
+geneLst <- geneLst$ENTREZID
+geneLst
+```
+
+GO over-representation analysis using package clusterProfiler.
+
+```{r}
+go <- enrichGO(geneLst, OrgDb = "org.Hs.eg.db", keyType = "ENTREZID", ont = "ALL", readable = TRUE)
+```
+
+View GO result.
+
+```{r}
+head(go, 25) %>% dplyr::select(ID, Description, pvalue, p.adjust) %>% DT::datatable(elementId = "goEle")
+```
+
+Export GO result.
+
+```{r}
+DB01001_assocBreastCancer_GO <- as.data.frame(go@result)
+DB01001_assocBreastCancer_GO
+
+write.csv(DB01001_assocBreastCancer_GO, "DB01001_GO_v2.csv")
+```
+
+# Budesonide_DB01222
+Read in PathFX result file.
+
+```{r}
+DB01222 <- read.csv("/Users/rachelzhang/Downloads/Budesonide_DB01222.csv")
+DB01222 <- as.data.frame(DB01222) %>% column_to_rownames("X")
+colnames(DB01222)
+DB01222
+```
+
+Filter for phenotypes involving keyword "breast".
+
+```{r}
+DB01222_assocBreastCancer <- DB01222[grep('[bB]reast', DB01222$phenotype), ]
+DB01222_assocBreastCancer
+```
+
+Extract genes associated with those phenotypes.
+
+```{r}
+DB01222_assocBreastCancer_geneID <- as.data.frame(DB01222_assocBreastCancer$genes)
+colnames(DB01222_assocBreastCancer_geneID)[1] <- "gene"
+geneID_01222 <- unique(DB01222_assocBreastCancer_geneID)
+geneIDs_01222 <- unlist(strsplit(geneID_01222$gene, ","))
+```
+
+Converting gene names to Entrez ID.
+
+```{r}
+hs <- org.Hs.eg.db
+my.symbols <- geneIDs_01222
+geneLst_01222 <- select(hs, 
+                  keys = my.symbols,
+                  columns = c("ENTREZID", "SYMBOL"),
+                  keytype = "SYMBOL")
+geneLst_01222 <- geneLst_01222$ENTREZID
+geneLst_01222
+```
+
+GO over-representation analysis using package clusterProfiler.
+
+```{r}
+go <- enrichGO(geneLst_01222, OrgDb = "org.Hs.eg.db", keyType = "ENTREZID", ont = "ALL", readable = TRUE)
+```
+
+View GO result.
+
+```{r}
+head(go, 25) %>% dplyr::select(ID, Description, pvalue, p.adjust) %>% DT::datatable(elementId = "goEle")
+```
+Export GO result.
+
+```{r}
+DB01222_assocBreastCancer_GO <- as.data.frame(go@result)
+DB01222_assocBreastCancer_GO
+
+write.csv(DB01222_assocBreastCancer_GO, "DB01222_GO.csv")
+```
+
+#Formoterol_DB00983
+Read in PathFX result file.
+
+```{r}
+DB00983 <- read.csv("/Users/rachelzhang/Downloads/Formoterol_DB00983.csv")
+DB00983 <- as.data.frame(DB00983) %>% column_to_rownames("X")
+colnames(DB00983)
+DB00983
+```
+
+Filter for phenotypes involving keyword "breast".
+
+```{r}
+DB00983_assocBreastCancer <- DB00983[grep('[bB]reast', DB00983$phenotype), ]
+DB00983_assocBreastCancer
+```
+Extract genes associated with those phenotypes.
+
+```{r}
+DB00983_assocBreastCancer_geneID <- as.data.frame(DB00983_assocBreastCancer$genes)
+DB00983_assocBreastCancer_geneID <- c("AP2S1", "APOB", "AVP", "NPS", "PTH", "WNT5A")
+```
+
+Converting gene names to Entrez ID.
+
+```{r}
+hs <- org.Hs.eg.db
+my.symbols <- DB00983_assocBreastCancer_geneID
+geneLst_00983 <- select(hs, 
+                  keys = my.symbols,
+                  columns = c("ENTREZID", "SYMBOL"),
+                  keytype = "SYMBOL")
+geneLst_00983 <- geneLst_00983$ENTREZID
+geneLst_00983
+```
+
+GO over-representation analysis using package clusterProfiler.
+
+```{r}
+go <- enrichGO(geneLst_00983, OrgDb = "org.Hs.eg.db", keyType = "ENTREZID", ont = "ALL", readable = TRUE)
+```
+
+View GO result.
+
+```{r}
+head(go, 25) %>% dplyr::select(ID, Description, pvalue, p.adjust) %>% DT::datatable(elementId = "goEle")
+```
+Export GO result.
+
+```{r}
+DB00983_assocBreastCancer_GO <- as.data.frame(go@result)
+DB00983_assocBreastCancer_GO
+
+write.csv(DB00983_assocBreastCancer_GO, "DB00983_GO.csv")
+```
+
+
+
+
+
